@@ -1,0 +1,28 @@
+{
+  "name": "ltc-cdvp-modal",
+  "version": "2.1.2",
+  "description": "Add a modal view to your applications",
+  "cordova": {
+    "id": "ltc-cdvp-modal",
+    "platforms": [
+      "ios"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Emadello/cordova-plugin-modal.git"
+  },
+  "keywords": [
+	"ecosystem:cordova",
+    "cordova",
+    "tabbar",
+    "cordova-ios",
+    "Native"
+  ],
+  "author": "Lifetimecode.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Emadello/cordova-plugin-modal/issues"
+  },
+  "homepage": "https://github.com/Emadello/cordova-plugin-modal#readme"
+}
