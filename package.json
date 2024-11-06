@@ -1,6 +1,6 @@
 {
   "name": "ltc-cdvp-modal",
-  "version": "2.1.2",
+  "version": "2.2.0",
   "description": "Add a modal view to your applications",
   "cordova": {
     "id": "ltc-cdvp-modal",
