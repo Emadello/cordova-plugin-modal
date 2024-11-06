@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
            id="ltc-cdvp-modal"
-      version="0.0.1">
+      version="2.2.0">
 
     <name>Modal</name>
     <description>Cordova Modal Plugin</description>
@@ -10,7 +10,7 @@
     <repo>https://github.com/Emadello/cordova-plugin-modal.git</repo>
 
     <engines>
-      <engine name="cordova" version=">=3.1.0" /><!-- Needs cordova/urlutil -->
+      <engine name="cordova" version=">=11.0.0" /><!-- Needs cordova/urlutil -->
     </engines>
 
     <js-module src="www/modal.js" name="Modal">
