@@ -34,7 +34,7 @@
         <resource-file src="src/android/res/anim/bottom_out.xml" target="res/anim/bottom_out.xml" />
 
         <config-file target="AndroidManifest.xml" parent="application">
-            <activity android:name="kr.co.purpleworks.cordova.modal.ModalActivity"></activity>
+            <activity android:name="kr.co.purpleworks.cordova.modal.ModalActivity" android:theme="@style/Theme.App.SplashScreen"></activity>
         </config-file>
     </platform>
 
