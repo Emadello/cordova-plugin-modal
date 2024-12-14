@@ -40,10 +40,16 @@ public class Modal extends CordovaPlugin {
     }
 
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-		if(requestCode == ACTIVITY_MODAL) {
-			if(resultCode == Activity.RESULT_OK) {
+		if (requestCode == ACTIVITY_MODAL) {
+			if (resultCode == Activity.RESULT_OK) {
 				String param = intent.getStringExtra("param");
-				this.callbackContext.success(param);
+				if (param != null) {
+					this.callbackContext.success(param); // Pass the result back to the JavaScript layer
+				} else {
+					this.callbackContext.success("closed_without_data"); // Default case for closure without specific data
+				}
+			} else {
+				this.callbackContext.error("modal_dismissed_with_error"); // Error case
 			}
 		}
 	}
