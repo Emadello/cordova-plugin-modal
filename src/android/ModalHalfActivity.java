@@ -1,28 +1,30 @@
 package kr.co.purpleworks.cordova.modal;
 
-import org.apache.cordova.CordovaActivity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.view.Gravity;
-import android.view.WindowManager;
 
-public class ModalActivity extends CordovaActivity {
+import com.towntender.app.R;
 
+import org.apache.cordova.CordovaActivity;
+
+public class ModalHalfActivity extends CordovaActivity {
     private int dismissOption = 2; // 0=undismissable, 1=X-only, 2=X+back
     private int xPosition = 0;     // 0=hidden, 1=left, 2=right
-    private ImageButton closeButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTheme(R.style.Theme_ModalHalf); // transparent half-sheet theme
 
-        // Transition animations
+        // Animations
         Resources res = getResources();
         int bottomInAnim = res.getIdentifier("bottom_in", "anim", getPackageName());
         int holdAnim = res.getIdentifier("hold", "anim", getPackageName());
@@ -32,14 +34,24 @@ public class ModalActivity extends CordovaActivity {
 
         super.init();
 
-        Intent intent = getIntent();
-        String url = intent.getStringExtra(Modal.PARAM_LOAD_URL);
-        dismissOption = intent.getIntExtra(Modal.PARAM_DISMISS_OPTION, 3);
-        xPosition = intent.getIntExtra(Modal.PARAM_X_POSITION, 0);
+        // Parameters
+        Intent i = getIntent();
+        String url = i.getStringExtra(Modal.PARAM_LOAD_URL);
+        dismissOption = i.getIntExtra("dismissOption", 3);
+        xPosition = i.getIntExtra("xPosition", 0);
 
-        if (url != null) {
+        if (url != null && !url.isEmpty()) {
             super.loadUrl(url);
         }
+
+        // Half height + bottom
+        getWindow().setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                getResources().getDisplayMetrics().heightPixels / 2
+        );
+        getWindow().setGravity(Gravity.BOTTOM);
+
+        // Add X button if required
         if (xPosition != 0) {
             addCloseButton(xPosition);
         }
@@ -95,7 +107,7 @@ public class ModalActivity extends CordovaActivity {
             setResult(RESULT_OK, intent);
             super.onBackPressed();
         }
-        // If dismissOption = 1 or 2 → ignore back press
+        // dismissOption 1 or 2: ignore back press
     }
 
     @Override

@@ -12,6 +12,7 @@
 @interface PPDModal : CDVPlugin
 
 - (void)open:(CDVInvokedUrlCommand*)command;
+- (void)openHalf:(CDVInvokedUrlCommand *)command;
 - (void)close:(CDVInvokedUrlCommand*)command;
 
 @end

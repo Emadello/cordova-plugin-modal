@@ -13,32 +13,84 @@
 
 - (void)open:(CDVInvokedUrlCommand *)command
 {
-    CDVPluginResult* pluginResult = nil;
     NSString* url = [command.arguments objectAtIndex:0];
+    NSNumber* mode = (command.arguments.count > 1) ? command.arguments[1] : @(2); // default = 2
+    NSNumber* btnPos = (command.arguments.count > 2) ? command.arguments[2] : @(0); // default right
     NSString* callbackId = command.callbackId;
+
     PPDModalViewController *vc = [[PPDModalViewController alloc] init];
-    
-    vc.modalPresentationStyle = UIModalPresentationAutomatic;
-            
+    vc.dismissMode = [mode integerValue];
+    vc.closeButtonPosition = [btnPos integerValue];
+
     if (callbackId) {
         [vc setParantCommandDelegate:self.commandDelegate];
         [vc setCallbackId:callbackId];
-        
     }
-    
+
+    vc.modalPresentationStyle = UIModalPresentationAutomatic;
     vc.presentationController.delegate = self;
-    
+
     if (![[NSNull null] isEqual:url]) {
         vc.startPage = url;
-    }
-    else {
+    } else {
         vc.startPage = @"https://github.com/purpleworks-developer/cordova-plugin-modal";
     }
-    
+
     [self.viewController presentViewController:vc animated:YES completion:^{
         NSLog(@"Modal Presented");
     }];
-        
+}
+
+- (void)openHalf:(CDVInvokedUrlCommand *)command
+{
+    NSString* url = [command.arguments objectAtIndex:0];
+    NSNumber* mode = (command.arguments.count > 1) ? command.arguments[1] : @(2); // default = 2
+    NSNumber* btnPos = (command.arguments.count > 2) ? command.arguments[2] : @(0); // default right
+    NSString* callbackId = command.callbackId;
+
+    PPDModalViewController *vc = [[PPDModalViewController alloc] init];
+    vc.dismissMode = [mode integerValue];
+    vc.closeButtonPosition = [btnPos integerValue];
+
+    if (callbackId) {
+        [vc setParantCommandDelegate:self.commandDelegate];
+        [vc setCallbackId:callbackId];
+    }
+
+    if (![[NSNull null] isEqual:url]) {
+        vc.startPage = url;
+    } else {
+        vc.startPage = @"https://github.com/purpleworks-developer/cordova-plugin-modal";
+    }
+
+    if (@available(iOS 15.0, *)) {
+        vc.modalPresentationStyle = UIModalPresentationPageSheet;
+        UISheetPresentationController *sheet = vc.sheetPresentationController;
+        if (sheet) {
+            sheet.detents = @[
+            [UISheetPresentationControllerDetent mediumDetent],
+            [UISheetPresentationControllerDetent largeDetent]
+            ];
+            sheet.prefersGrabberVisible = YES;
+            sheet.preferredCornerRadius = 20.0;
+        }
+    } else {
+        vc.modalPresentationStyle = UIModalPresentationAutomatic;
+    }
+
+    vc.presentationController.delegate = self;
+
+    [self.viewController presentViewController:vc animated:YES completion:^{
+        NSLog(@"Half Modal Presented");
+    }];
+}
+
+- (BOOL)presentationControllerShouldDismiss:(UIPresentationController *)presentationController {
+    PPDModalViewController *vc = (PPDModalViewController *)presentationController.presentedViewController;
+    if (vc.dismissMode == 0 || vc.dismissMode == 1) {
+        return NO; // undismissable OR X-only
+    }
+    return YES; // X + swipe
 }
 
 - (void)presentationControllerDidDismiss:(UIPresentationController *)presentationController {
