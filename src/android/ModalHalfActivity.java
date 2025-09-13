@@ -1,17 +1,14 @@
 package kr.co.purpleworks.cordova.modal;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-
-import com.towntender.app.R;
 
 import org.apache.cordova.CordovaActivity;
 
@@ -22,7 +19,10 @@ public class ModalHalfActivity extends CordovaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTheme(R.style.Theme_ModalHalf); // transparent half-sheet theme
+
+        Context context = this;
+        int themeId = context.getResources().getIdentifier("Theme_ModalHalf", "style", context.getPackageName());
+        setTheme(themeId); // transparent half-sheet theme
 
         // Animations
         Resources res = getResources();
