@@ -3,14 +3,18 @@ package kr.co.purpleworks.cordova.modal;
 import org.apache.cordova.CordovaActivity;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.view.Gravity;
 import android.view.WindowManager;
+import android.widget.ProgressBar;
 
 public class ModalActivity extends CordovaActivity {
 
@@ -22,7 +26,6 @@ public class ModalActivity extends CordovaActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Transition animations
         Resources res = getResources();
         int bottomInAnim = res.getIdentifier("bottom_in", "anim", getPackageName());
         int holdAnim = res.getIdentifier("hold", "anim", getPackageName());
@@ -30,19 +33,49 @@ public class ModalActivity extends CordovaActivity {
             this.overridePendingTransition(bottomInAnim, holdAnim);
         }
 
-        super.init();
+        // Make window visible immediately
+        getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        );
 
-        Intent intent = getIntent();
-        String url = intent.getStringExtra(Modal.PARAM_LOAD_URL);
-        dismissOption = intent.getIntExtra(Modal.PARAM_DISMISS_OPTION, 3);
-        xPosition = intent.getIntExtra(Modal.PARAM_X_POSITION, 0);
+        // White placeholder with spinner
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(0xFFFFFFFF); // white background
 
-        if (url != null) {
-            super.loadUrl(url);
-        }
-        if (xPosition != 0) {
-            addCloseButton(xPosition);
-        }
+        ProgressBar progress = new ProgressBar(this);
+        progress.getIndeterminateDrawable().setColorFilter(
+                Color.parseColor("#1A1A2E"), // bluish-black
+                PorterDuff.Mode.SRC_IN
+        );
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.CENTER
+        );
+        root.addView(progress, lp);
+
+        setContentView(root);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+
+        // Defer Cordova init
+        getWindow().getDecorView().post(() -> {
+            super.init();
+
+            Intent intent = getIntent();
+            String url = intent.getStringExtra(Modal.PARAM_LOAD_URL);
+            dismissOption = intent.getIntExtra(Modal.PARAM_DISMISS_OPTION, 3);
+            xPosition = intent.getIntExtra(Modal.PARAM_X_POSITION, 0);
+
+            if (url != null) {
+                super.loadUrl(url);
+            }
+            if (xPosition != 0) {
+                addCloseButton(xPosition);
+            }
+
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        });
     }
 
     private void addCloseButton(int pos) {

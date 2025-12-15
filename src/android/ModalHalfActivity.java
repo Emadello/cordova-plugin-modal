@@ -3,12 +3,16 @@ package kr.co.purpleworks.cordova.modal;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 
 import org.apache.cordova.CordovaActivity;
 
@@ -32,17 +36,11 @@ public class ModalHalfActivity extends CordovaActivity {
             this.overridePendingTransition(bottomInAnim, holdAnim);
         }
 
-        super.init();
-
-        // Parameters
-        Intent i = getIntent();
-        String url = i.getStringExtra(Modal.PARAM_LOAD_URL);
-        dismissOption = i.getIntExtra("dismissOption", 3);
-        xPosition = i.getIntExtra("xPosition", 0);
-
-        if (url != null && !url.isEmpty()) {
-            super.loadUrl(url);
-        }
+        // Make window visible immediately
+        getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        );
 
         // Half height + bottom
         getWindow().setLayout(
@@ -51,10 +49,47 @@ public class ModalHalfActivity extends CordovaActivity {
         );
         getWindow().setGravity(Gravity.BOTTOM);
 
-        // Add X button if required
-        if (xPosition != 0) {
-            addCloseButton(xPosition);
-        }
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(0xCCFFFFFF); // semi-white placeholder
+        ProgressBar progress = new ProgressBar(this);
+        progress.getIndeterminateDrawable().setColorFilter(
+                Color.parseColor("#1A1A2E"), // bluish-black
+                PorterDuff.Mode.SRC_IN
+        );
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.CENTER
+        );
+        root.addView(progress, lp);
+        setContentView(root);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+
+        // Defer Cordova init
+        getWindow().getDecorView().post(() -> {
+
+            super.init();
+
+            // Parameters
+            Intent i = getIntent();
+            String url = i.getStringExtra(Modal.PARAM_LOAD_URL);
+            dismissOption = i.getIntExtra("dismissOption", 3);
+            xPosition = i.getIntExtra("xPosition", 0);
+
+            appView.getView().setAlpha(0f);
+            if (url != null && !url.isEmpty()) {
+                super.loadUrl(url);
+            }
+            setContentView(appView.getView());
+            appView.getView().animate().alpha(1f).setDuration(150).start();
+
+            // Add X button if required
+            if (xPosition != 0) {
+                addCloseButton(xPosition);
+            }
+
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        });
     }
 
     private void addCloseButton(int pos) {
