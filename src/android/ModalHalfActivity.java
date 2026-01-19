@@ -13,6 +13,11 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import org.apache.cordova.ConfigXmlParser;
+import org.apache.cordova.PluginEntry;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.cordova.CordovaActivity;
 
@@ -21,12 +26,69 @@ public class ModalHalfActivity extends CordovaActivity {
     private int xPosition = 0;     // 0=hidden, 1=left, 2=right
 
     @Override
+    protected void loadConfig() {
+        ConfigXmlParser parser = new ConfigXmlParser();
+
+        // Try to parse res/xml/config_modal.xml if available, else fallback to default config.xml
+        int modalConfigId = getResources().getIdentifier("config_modal", "xml", getPackageName());
+
+        boolean parsedModal = false;
+
+        if (modalConfigId != 0) {
+            // Some cordova-android versions have ConfigXmlParser.parse(Context, int)
+            try {
+                parser.getClass()
+                        .getMethod("parse", android.content.Context.class, int.class)
+                        .invoke(parser, this, modalConfigId);
+                parsedModal = true;
+            } catch (Throwable ignored) {
+                // Fall back below
+            }
+        }
+
+        if (!parsedModal) {
+            // Default behavior (parses res/xml/config.xml)
+            parser.parse(this);
+        }
+
+        // Apply parsed values to CordovaActivity fields
+        this.preferences = parser.getPreferences();
+        this.launchUrl = parser.getLaunchUrl();
+        this.pluginEntries = parser.getPluginEntries();
+
+        // Hard-disable splash in THIS activity (belt + suspenders)
+        try {
+            this.preferences.set("SplashScreen", 0);
+            this.preferences.set("SplashScreenDelay", 0);
+            this.preferences.set("AutoHideSplashScreen", true);
+        } catch (Throwable ignored) {}
+
+        // Remove SplashScreenPlugin entry so it never runs (prevents splash_screen_view inflate)
+        if (this.pluginEntries != null) {
+            List<PluginEntry> filtered = new ArrayList<>();
+            for (PluginEntry e : this.pluginEntries) {
+                String service = e.service;
+                String clazz = e.pluginClass;
+
+                boolean isSplash =
+                        "SplashScreen".equalsIgnoreCase(service) ||
+                                (clazz != null && clazz.contains("SplashScreenPlugin"));
+
+                if (!isSplash) filtered.add(e);
+            }
+            this.pluginEntries = (ArrayList<PluginEntry>) filtered;
+        }
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
 
         Context context = this;
-        int themeId = context.getResources().getIdentifier("Theme_ModalHalf", "style", context.getPackageName());
-        setTheme(themeId); // transparent half-sheet theme
+
+        int themeId = getResources().getIdentifier("Theme_ModalHalf", "style", getPackageName());
+        if (themeId != 0) setTheme(themeId);
+
+        super.onCreate(savedInstanceState);
 
         // Animations
         Resources res = getResources();
