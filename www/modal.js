@@ -9,7 +9,7 @@ var modal = {
    * @param {Number} dismissMode - 0=undismissable, 1=X only, 2=X+swipe (default=2)
    * @param {Number} closeButtonPosition - 0=hidden (default), 1=left, 2=right
    */
-  open: function(successCallback, errorCallback, url, dismissMode, closeButtonPosition) {
+  open: function (successCallback, errorCallback, url, dismissMode, closeButtonPosition) {
     exec(successCallback, errorCallback, 'Modal', 'open', [
       url,
       dismissMode || 2,
@@ -20,8 +20,16 @@ var modal = {
   /**
    * Open a half-screen (sheet) modal
    */
-  openHalf: function(successCallback, errorCallback, url, dismissMode, closeButtonPosition) {
+  openHalf: function (successCallback, errorCallback, url, dismissMode, closeButtonPosition) {
     exec(successCallback, errorCallback, 'Modal', 'openHalf', [
+      url,
+      dismissMode || 2,
+      closeButtonPosition || 0
+    ]);
+  },
+
+  openSF: function (successCallback, errorCallback, url, dismissMode, closeButtonPosition) {
+    exec(successCallback, errorCallback, 'Modal', 'openSF', [
       url,
       dismissMode || 2,
       closeButtonPosition || 0
@@ -31,7 +39,7 @@ var modal = {
   /**
    * Close the modal (from inside JS)
    */
-  close: function(data) {
+  close: function (data) {
     exec(null, null, 'Modal', 'close', [data]);
   }
 };

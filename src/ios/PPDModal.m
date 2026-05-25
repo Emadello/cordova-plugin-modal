@@ -8,6 +8,8 @@
 
 #import "PPDModal.h"
 #import "PPDModalViewController.h"
+#import <objc/runtime.h>
+#import <SafariServices/SafariServices.h>
 
 @implementation PPDModal
 
@@ -154,5 +156,64 @@
     }
     
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)openSF:(CDVInvokedUrlCommand *)command
+{
+    NSString *urlString = nil;
+
+    if (command.arguments.count > 0 && ![[NSNull null] isEqual:command.arguments[0]]) {
+        urlString = command.arguments[0];
+    }
+
+    if (!urlString || urlString.length == 0) {
+        urlString = @"https://github.com/purpleworks-developer/cordova-plugin-modal";
+    }
+
+    NSURL *url = [NSURL URLWithString:urlString];
+
+    if (!url || !url.scheme || !url.host) {
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                          messageAsString:@"Invalid URL"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+
+    SFSafariViewController *safariVC = [[SFSafariViewController alloc] initWithURL:url];
+    safariVC.delegate = self;
+
+    // Disable swipe-down dismissal
+    safariVC.modalInPresentation = YES;
+
+    // Recommended for payment / Apple Pay flows
+    safariVC.modalPresentationStyle = UIModalPresentationFullScreen;
+
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT];
+    [pluginResult setKeepCallbackAsBool:YES];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+
+    objc_setAssociatedObject(
+        safariVC,
+        @"callbackId",
+        command.callbackId,
+        OBJC_ASSOCIATION_RETAIN_NONATOMIC
+    );
+
+    [self.viewController presentViewController:safariVC animated:YES completion:^{
+        NSLog(@"SFSafariViewController Presented");
+    }];
+}
+
+- (void)safariViewControllerDidFinish:(SFSafariViewController *)controller
+{
+    NSString *callbackId = objc_getAssociatedObject(controller, @"callbackId");
+
+    if (callbackId) {
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                                          messageAsString:@"dismissed"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:callbackId];
+    }
+
+    NSLog(@"SFSafariViewController Dismissed");
 }
 @end
