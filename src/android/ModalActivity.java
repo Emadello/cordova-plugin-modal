@@ -27,55 +27,90 @@ public class ModalActivity extends CordovaActivity {
         super.onCreate(savedInstanceState);
 
         Resources res = getResources();
-        int bottomInAnim = res.getIdentifier("bottom_in", "anim", getPackageName());
-        int holdAnim = res.getIdentifier("hold", "anim", getPackageName());
+
+        int bottomInAnim = res.getIdentifier(
+                "bottom_in",
+                "anim",
+                getPackageName()
+        );
+
+        int holdAnim = res.getIdentifier(
+                "hold",
+                "anim",
+                getPackageName()
+        );
+
         if (bottomInAnim != 0 && holdAnim != 0) {
-            this.overridePendingTransition(bottomInAnim, holdAnim);
+            overridePendingTransition(bottomInAnim, holdAnim);
         }
 
-        // Make window visible immediately
-        getWindow().setFlags(
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+        getWindow().addFlags(
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
         );
 
-        // White placeholder with spinner
-        FrameLayout root = new FrameLayout(this);
-        root.setBackgroundColor(0xFFFFFFFF); // white background
+        // Temporary white loading view
+        FrameLayout loadingRoot = new FrameLayout(this);
+        loadingRoot.setBackgroundColor(Color.WHITE);
 
         ProgressBar progress = new ProgressBar(this);
         progress.getIndeterminateDrawable().setColorFilter(
-                Color.parseColor("#1A1A2E"), // bluish-black
+                Color.parseColor("#1A1A2E"),
                 PorterDuff.Mode.SRC_IN
         );
-        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                Gravity.CENTER
+
+        FrameLayout.LayoutParams progressParams =
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        Gravity.CENTER
+                );
+
+        loadingRoot.addView(progress, progressParams);
+        setContentView(loadingRoot);
+
+        /*
+        * This must run synchronously in onCreate().
+        * SystemWebChromeClient registers an ActivityResultLauncher,
+        * which must happen before the Activity reaches STARTED.
+        *
+        * super.init() also attaches appView to the Activity, so do not
+        * call setContentView(appView.getView()) afterward.
+        */
+        super.init();
+
+        Intent intent = getIntent();
+
+        String url = intent.getStringExtra(Modal.PARAM_LOAD_URL);
+
+        dismissOption = intent.getIntExtra(
+                Modal.PARAM_DISMISS_OPTION,
+                2
         );
-        root.addView(progress, lp);
 
-        setContentView(root);
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        xPosition = intent.getIntExtra(
+                Modal.PARAM_X_POSITION,
+                0
+        );
 
-        // Defer Cordova init
-        getWindow().getDecorView().post(() -> {
-            super.init();
+        appView.getView().setAlpha(0f);
 
-            Intent intent = getIntent();
-            String url = intent.getStringExtra(Modal.PARAM_LOAD_URL);
-            dismissOption = intent.getIntExtra(Modal.PARAM_DISMISS_OPTION, 3);
-            xPosition = intent.getIntExtra(Modal.PARAM_X_POSITION, 0);
+        if (url != null && !url.isEmpty()) {
+            super.loadUrl(url);
+        }
 
-            if (url != null) {
-                super.loadUrl(url);
-            }
-            if (xPosition != 0) {
-                addCloseButton(xPosition);
-            }
+        if (xPosition != 0) {
+            addCloseButton(xPosition);
+        }
 
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-        });
+        appView.getView()
+                .animate()
+                .alpha(1f)
+                .setDuration(150)
+                .start();
+
+        getWindow().clearFlags(
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        );
     }
 
     private void addCloseButton(int pos) {

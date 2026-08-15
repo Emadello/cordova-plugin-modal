@@ -79,79 +79,93 @@ public class ModalHalfActivity extends CordovaActivity {
             this.pluginEntries = (ArrayList<PluginEntry>) filtered;
         }
     }
-
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        int themeId = getResources().getIdentifier(
+                "Theme_ModalHalf",
+                "style",
+                getPackageName()
+        );
 
-        Context context = this;
-
-        int themeId = getResources().getIdentifier("Theme_ModalHalf", "style", getPackageName());
-        if (themeId != 0) setTheme(themeId);
+        if (themeId != 0) {
+            setTheme(themeId);
+        }
 
         super.onCreate(savedInstanceState);
 
-        // Animations
         Resources res = getResources();
-        int bottomInAnim = res.getIdentifier("bottom_in", "anim", getPackageName());
-        int holdAnim = res.getIdentifier("hold", "anim", getPackageName());
-        if (bottomInAnim != 0 && holdAnim != 0) {
-            this.overridePendingTransition(bottomInAnim, holdAnim);
-        }
-
-        // Make window visible immediately
-        getWindow().setFlags(
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        int bottomInAnim = res.getIdentifier(
+                "bottom_in",
+                "anim",
+                getPackageName()
+        );
+        int holdAnim = res.getIdentifier(
+                "hold",
+                "anim",
+                getPackageName()
         );
 
-        // Half height + bottom
+        if (bottomInAnim != 0 && holdAnim != 0) {
+            overridePendingTransition(bottomInAnim, holdAnim);
+        }
+
         getWindow().setLayout(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 getResources().getDisplayMetrics().heightPixels / 2
         );
         getWindow().setGravity(Gravity.BOTTOM);
 
-        FrameLayout root = new FrameLayout(this);
-        root.setBackgroundColor(0xCCFFFFFF); // semi-white placeholder
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+
+        // Temporary loading view
+        FrameLayout loadingRoot = new FrameLayout(this);
+        loadingRoot.setBackgroundColor(0xCCFFFFFF);
+
         ProgressBar progress = new ProgressBar(this);
         progress.getIndeterminateDrawable().setColorFilter(
-                Color.parseColor("#1A1A2E"), // bluish-black
+                Color.parseColor("#1A1A2E"),
                 PorterDuff.Mode.SRC_IN
         );
-        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+
+        FrameLayout.LayoutParams progressParams = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.CENTER
         );
-        root.addView(progress, lp);
-        setContentView(root);
+
+        loadingRoot.addView(progress, progressParams);
+        setContentView(loadingRoot);
+
+        /*
+        * Do not put this inside post(), runOnUiThread(), a Handler,
+        * onStart(), or onResume().
+        */
+        super.init();
+
+        Intent intent = getIntent();
+        String url = intent.getStringExtra(Modal.PARAM_LOAD_URL);
+        dismissOption = intent.getIntExtra("dismissOption", 2);
+        xPosition = intent.getIntExtra("xPosition", 0);
+
+        appView.getView().setAlpha(0f);
+        // setContentView(appView.getView());
+
+        if (xPosition != 0) {
+            addCloseButton(xPosition);
+        }
+
+        if (url != null && !url.isEmpty()) {
+            super.loadUrl(url);
+        }
+
+        appView.getView()
+                .animate()
+                .alpha(1f)
+                .setDuration(150)
+                .start();
+
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-
-        // Defer Cordova init
-        getWindow().getDecorView().post(() -> {
-
-            super.init();
-
-            // Parameters
-            Intent i = getIntent();
-            String url = i.getStringExtra(Modal.PARAM_LOAD_URL);
-            dismissOption = i.getIntExtra("dismissOption", 3);
-            xPosition = i.getIntExtra("xPosition", 0);
-
-            appView.getView().setAlpha(0f);
-            if (url != null && !url.isEmpty()) {
-                super.loadUrl(url);
-            }
-            setContentView(appView.getView());
-            appView.getView().animate().alpha(1f).setDuration(150).start();
-
-            // Add X button if required
-            if (xPosition != 0) {
-                addCloseButton(xPosition);
-            }
-
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-        });
     }
 
     private void addCloseButton(int pos) {

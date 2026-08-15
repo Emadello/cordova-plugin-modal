@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
            id="ltc-cdvp-modal"
-      version="4.4.0">
+      version="4.5.0">
 
     <name>Modal</name>
     <description>Cordova Modal Plugin</description>
@@ -10,7 +10,7 @@
     <repo>https://github.com/Emadello/cordova-plugin-modal.git</repo>
 
     <engines>
-      <engine name="cordova" version=">=11.0.0" /><!-- Needs cordova/urlutil -->
+      <engine name="cordova" version=">=12.0.0" /><!-- Needs cordova/urlutil -->
     </engines>
 
     <js-module src="www/modal.js" name="Modal">
@@ -34,7 +34,7 @@
         <resource-file src="src/android/res/anim/bottom_in.xml" target="res/anim/bottom_in.xml" />
         <resource-file src="src/android/res/anim/bottom_out.xml" target="res/anim/bottom_out.xml" />
 
-        <config-file target="app/src/main/res/values/themes.xml" parent="/resources">
+        <config-file target="app/src/main/res/values/cdv_themes.xml" parent="/resources">
             <style name="Theme.ModalHalf" parent="Theme.AppCompat.Light.NoActionBar">
                 <item name="android:windowIsTranslucent">true</item>
                 <item name="android:windowBackground">@android:color/transparent</item>
