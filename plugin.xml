@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
            id="ltc-cdvp-modal"
-      version="4.5.0">
+      version="4.6.0">
 
     <name>Modal</name>
     <description>Cordova Modal Plugin</description>
@@ -44,7 +44,8 @@
         </config-file>
 
         <config-file target="AndroidManifest.xml" parent="application">
-            <activity android:name="kr.co.purpleworks.cordova.modal.ModalActivity" android:theme="@style/Theme.App.SplashScreen"></activity>
+            <activity android:name="kr.co.purpleworks.cordova.modal.ModalActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"></activity>
             <activity
             android:name="kr.co.purpleworks.cordova.modal.ModalHalfActivity"
             android:theme="@style/Theme.ModalHalf"

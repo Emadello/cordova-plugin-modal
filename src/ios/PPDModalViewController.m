@@ -14,6 +14,10 @@
 
 @implementation PPDModalViewController
 
+// Do not create the app's launch storyboard inside the modal.
+- (void)createLaunchView {
+}
+
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
