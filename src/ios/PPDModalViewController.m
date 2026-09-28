@@ -7,6 +7,7 @@
 //
 
 #import "PPDModalViewController.h"
+#import <WebKit/WebKit.h>
 
 @interface PPDModalViewController ()
 
@@ -29,6 +30,17 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+
+    UIColor *modalBackground = [UIColor whiteColor];
+
+    self.view.backgroundColor = modalBackground;
+    self.backgroundColor = modalBackground;
+
+    if ([self.webView isKindOfClass:[WKWebView class]]) {
+        WKWebView *webView = (WKWebView *)self.webView;
+        webView.backgroundColor = modalBackground;
+        webView.scrollView.backgroundColor = modalBackground;
+    }
 
     // Only add X button if dismissMode allows it AND position is not 0
     if ((self.dismissMode == 1 || self.dismissMode == 2) && self.closeButtonPosition != 0) {
